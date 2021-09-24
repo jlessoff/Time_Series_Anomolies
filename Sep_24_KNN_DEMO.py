@@ -1,3 +1,7 @@
+##IMPORTANT NOTES: all files should be local. not c drive
+
+
+
 #predict quality variable using other variables
 import pandas as pd
 #import data
@@ -13,6 +17,7 @@ knn_algo= KNeighborsRegressor(3)
 knn_algo.fit(wines_X,wines_Y)
 #do prediction on same data set used to learn the model. result is array of predicted values
 wines_pred=knn_algo.predict(wines_X)
+
 #different metrics to compare prediction to true value
 from sklearn.metrics import r2_score, mean_squared_error,mean_absolute_error
 #getting r2 value, 0.3886 which is not that good

@@ -147,9 +147,3 @@ visual_style["bbox"] = (1000, 1000)
 visual_style["margin"] = 20
 p = ig.plot(lesmis_net, **visual_style)
 p.save('plot1.png')
-
-### Your turn!
-### Select one of the graphs we've already worked with:
-### Game of thrones, Facebook, Polbooks, ...
-### Perform a similar analysis and decide whether they may be random graphs!
-### Decide which nodes have significant betweennesses.

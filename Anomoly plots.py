@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-# pip install --upgrade --user matrixprofile
 
 import pandas as pd
 import math
@@ -28,7 +24,7 @@ df = df.set_index('DATE').sort_index()
 df.head()
 df.describe()
 
-df.plot(figsize=(20,7), legend=None, \
+df.plot(figsize=(20,7), legend=None,
         title='Scheduled passengers (in thousands)')
 plt.xlabel('Pickup Datetime')
 plt.ylabel('Passengers')

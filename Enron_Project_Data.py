@@ -1,11 +1,11 @@
 import pandas as pd
+
 events = pd.read_csv('Enron_events.txt', sep="	")
 positions=pd.read_csv('Enron_positions.txt', sep='	')
 positions.columns=['id','email','position']
 from datetime import datetime
-#pd.set_option("display.max_columns", None)
-# pd.set_option("display.max_rows", None)
-
+pd.set_option("display.max_columns", None)
+pd.set_option("display.max_rows", None)
 date=[]
 for i in events['time']:
     day=datetime.fromtimestamp(956834340 + i).strftime("%d-%m-%Y")
@@ -25,7 +25,6 @@ new_df= pd.merge(
 
 
 
-
 new_df=new_df.rename(columns={'id':'sender_id', 'email':'sender_email','position':'sender_position'})
 new_df=new_df.drop('exped',axis=1)
 enron= pd.merge(
@@ -35,6 +34,7 @@ enron= pd.merge(
         left_on='destin',
         right_on='id'
     )
+
 enron=enron.rename(columns={'id':'destin_id', 'email':'destin_email','position':'destin_position'})
 
 enron=enron.drop('destin',axis=1)
@@ -52,7 +52,6 @@ profiles=pd.merge(
 profiles=profiles.rename(columns={'sender_id':'id', 'sender_email':'email','sender_position':'position'})
 daily_count_per_profile=profiles[['date','id','count_sent','count_rec']]
 
-
 #####
 ###find count of emails sent and received in total (dropping day variable from grouping)
 
@@ -69,8 +68,6 @@ profiles_agg=profiles_agg.rename(columns={'sender_id':'id', 'sender_email':'emai
 profiles_agg=profiles_agg[['id','email','position','count_sent','count_rec']]
 
 
-
-
 ###find average daily emails sent and recieved
 enron_daily_emails_sent = events.groupby([events['date'].dt.date,events['exped']])['destin'].count().reset_index().rename(columns={'destin':'daily_count_sent','exped' : 'employee_id'})
 enron_daily_emails_received = events.groupby([events['date'].dt.date,events['destin']])['exped'].count().reset_index().rename(columns={'destin':'employee_id','exped' : 'daily_count_received'})
@@ -80,7 +77,6 @@ employee_email_stats_daily= pd.merge(
         how='outer',
         on=['employee_id','date']
     )
-
 employee_email_stats_daily= pd.merge(
         employee_email_stats_daily,
         positions,
@@ -90,8 +86,11 @@ employee_email_stats_daily= pd.merge(
     )
 
 #drop n/a from employee id
-employee_email_stats_daily = employee_email_stats_daily.dropna()
+employee_email_stats_daily = employee_email_stats_daily.fillna(0)
+
 employee_email_stats_daily = employee_email_stats_daily.drop('id',axis=1)
 employee_email_stats_daily = employee_email_stats_daily.drop('email',axis=1)
 employee_email_stats_average=employee_email_stats_daily.groupby(employee_email_stats_daily['employee_id'])['daily_count_sent','daily_count_received'].mean()
 
+#####
+graph_ds=enron.groupby(['sender_id','destin_id'])['time'].count().reset_index(name="count")

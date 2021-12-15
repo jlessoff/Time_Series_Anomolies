@@ -12,7 +12,6 @@ for i in events['time']:
     day=datetime.fromtimestamp(956834340 + i).strftime("%d-%m-%Y")
     day=datetime.strptime(day,"%d-%m-%Y")
     date.append(day)
-    print(day)
 events['date']=date
 
 ###merge data sets to give more information about senders
@@ -81,10 +80,26 @@ employee_email_stats_daily= pd.merge(
 employee_email_stats_daily= pd.merge(
         employee_email_stats_daily,
         positions,
-        how='left',
+        how='right',
         left_on='employee_id',
         right_on='id'
     )
+###FInd number of users employees sent emails to
+sender_count=enron.groupby(['sender_id','date'])['destin_id'].nunique().reset_index(name="count_sent")
+sender_count1=sender_count.groupby(['sender_id'])['count_sent'].mean().reset_index(name="daily_user_sent")
+receiver_count=enron.groupby(['destin_id','date'])['sender_id'].nunique().reset_index(name="count_recieved")
+receiver_count1=receiver_count.groupby(['destin_id'])['count_recieved'].mean().reset_index(name="daily_user_received")
+send_receive = pd.DataFrame(enron, columns=['sender_count', 'reciever_count'])
+
+sender= pd.merge(
+        receiver_count1,
+        sender_count1,
+        how='outer',
+        left_on='destin_id',
+        right_on = 'sender_id'
+)
+print(sender)
+print(positions)
 
 #drop n/a from employee id
 employee_email_stats_daily = employee_email_stats_daily.fillna(0)
@@ -93,16 +108,29 @@ employee_email_stats_daily = employee_email_stats_daily.drop('id',axis=1)
 employee_email_stats_daily = employee_email_stats_daily.drop('email',axis=1)
 
 employee_email_stats_average=employee_email_stats_daily.groupby(employee_email_stats_daily['employee_id'])['daily_count_sent','daily_count_received'].mean()
+
+
+
+
+###AGGREGATE DETAILS
+agg_profiles= pd.merge(
+        sender,
+        employee_email_stats_average,
+        how='left',
+        left_on='destin_id',
+        right_on = 'employee_id'
+)
+agg_profiles=agg_profiles.drop('sender_id',axis=1)
+agg_profiles= agg_profiles.rename(columns={'destin_id':'employee_id'}).reset_index()
 #####
-graph_ds=enron.groupby(['sender_id','destin_id'])['time'].count().reset_index(name="count")
-
-
-
+graph_ds=enron.groupby(['sender_id','destin_id'])['time'].count()
+graph_ds= graph_ds.to_frame().rename(columns={'col1':'count'}).reset_index()
+agg_profiles=agg_profiles.fillna(0)
+print(agg_profiles)
 enron['date'] = pd.to_datetime(enron.date)
 basedate = pd.Timestamp('2000-04-27')
 # basedate = datetime.strptime(basedate, "%d-%m-%Y")
 enron['time_since'] = (enron['date']-basedate).dt.days
 graph_ds_2=enron.groupby(['time_since','sender_id','destin_id'])['time'].count().reset_index(name="count")
 time_graph_ds=new_df=graph_ds_2.rename(columns={'time_since':'time', 'sender_id':'source','destin_id':'target','count':'weight'})
-print(time_graph_ds)
 s=time_graph_ds.to_csv('time_graph.tedges')
